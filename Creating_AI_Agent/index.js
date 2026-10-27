@@ -1,0 +1,348 @@
+
+import 'dotenv/config'
+
+import {GoogleGenAI, Type} from '@google/genai'
+
+import readlineSync from "readline-sync";
+
+
+const ai = new GoogleGenAI({});
+
+
+// Crypto currency tool
+
+async function cryptoCurrency({coin, curr = 'inr'})
+{
+    const response = await fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=${curr}&ids=${coin}`);
+
+    const data = await response.json();
+
+    return data;
+}
+
+
+// Weather api tool
+
+async function weatherInformation({city})
+{
+    const response = await fetch(`http://api.weatherapi.com/v1/current.json?key=${process.env.WEATHER_API_KEY}&q=${city}&aqi=no`);
+
+    const data = await response.json();
+
+    return data;
+}
+
+
+
+// Crypto currency information
+
+const cryptoInfo = {
+    name : "cryptoCurrency",
+    description : "We can give you the current price of any cryptocurrency like bitcoin, ethereum, etc",
+    parameters : {
+        type : Type.OBJECT,
+        properties : {
+            coin : {
+                type : Type.STRING,
+                description : "It will be the name of the cryptocurrency coin like bitcoin, ethereum, etc"
+            },
+            curr : {
+                type : Type.STRING,
+                description : "It will be the currency like usd, inr, etc in which we want the price of the cryptocurrency, if currency is not mentioned by default take inr and use currency codes only"
+            }
+        },
+        required : ['coin']
+    }
+}
+
+// Weather information
+
+const weatherInfo = {
+    name : "weatherInformation",
+    description : "You can get the current weather information of any city like London, Tokyo, etc",
+    parameters : {
+        type : Type.OBJECT,
+        properties : {
+            city : {
+                type : Type.STRING,
+                description : "It will be the name of the city whose weather information we need to fetch like London, Tokyo, etc"
+            }
+        },
+        required : ['city']
+    }
+}
+
+// There can be multiple types like google search, code execution sandbox and function declaration types of tool
+
+// Hence inside array we use object to define the type of tools we are using as in this case function declarations for custom functions
+
+// Without this it might throw error as we haven't defined the type of tools 
+
+/*
+
+The API parser looks specifically for known top-level configuration keys inside each tool object 
+
+(such as functionDeclarations, googleSearch, or codeExecution). 
+
+Without the functionDeclarations key, the API does not recognize what category of tool you are providing.
+
+*/
+
+const History = [];
+
+const tools = [{ functionDeclarations : [cryptoInfo, weatherInfo]}];
+
+const toolFunctions = {
+
+    "cryptoCurrency" : cryptoCurrency,
+
+    "weatherInformation" : weatherInformation
+
+}
+
+/*
+
+async function runAgent()
+{
+    while(true)
+    {
+        const result = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents : History,
+            config: {
+                tools,
+            },
+        });
+
+        if(result.functionCalls && result.functionCalls.length > 0)
+        {
+            let cnt = 0;
+
+            while(cnt < result.functionCalls.length)
+            {
+                const functionCall = result.functionCalls[cnt];
+
+                const { name, args } = functionCall;
+
+                // using toolFunctions[name] as the name provided by LLM is in string format and we cannot call using string to we map it to funtion names
+
+                if(!toolFunctions[name])
+                {
+                    console.error(`Unknown Function Call : ${name}`);
+
+                    break;
+                }
+                
+                const response = await toolFunctions[name](args);
+
+                const functionResponsePart = {
+                    
+                    name,
+
+                    response : {
+                        result : response
+                    },
+
+                    id : functionCall.id,
+
+                }
+
+                // [ Comments
+
+                    For newer models without the thought signature it will throw error code : 400
+
+                    As the newer models also expect a thought signature also along with model response and in functionCall that is stripped
+
+                    result.candidates[0].content is the complete, raw content object returned by the Gemini model for that generation turn. 
+                    
+                    It represents the model's exact contribution to the conversation history.
+
+                    So instead of pushing functionCall we can just push this whole object only as it contains the exact response given by the model along with thought signature
+
+                    In Gemini, "candidate" does not mean a piece of data or an individual function call. A candidate represents one complete, alternative completion attempt generated by the model for the entire prompt.
+
+                    So candidate will contain like the whole model response and if more than 1 functionCall is there then it will do that too so in this case instead of pushing it in while loop we will just push it outside
+
+                    With candidates code will look like below comment
+                ]
+
+                
+                // [Comments
+
+                if (result.functionCalls && result.functionCalls.length > 0) {
+
+                    // 1. Push the ENTIRE model response content object directly.
+
+                    // This preserves all parts, function calls, and thought signatures intact.
+
+                    History.push(result.candidates[0].content);
+
+                    const functionResponseParts = [];
+
+                    // 2. Execute all requested tool calls (handles single or parallel tool calls)
+
+                    for (const functionCall of result.functionCalls) {
+
+                        const { name, args } = functionCall;
+
+                        if (!toolFunctions[name]) {
+                            console.error(`Unknown Function Call : ${name}`);
+                            continue;
+                        }
+
+                        const response = await toolFunctions[name](args);
+
+                        functionResponseParts.push({
+                            functionResponse: {
+                                name,
+                                response: {
+                                    result: response
+                                },
+                                id: functionCall.id,
+                            }
+                        });
+                    }
+
+                    // 3. Push all tool responses as a single user turn back to History
+                    if (functionResponseParts.length > 0) {
+                        History.push({
+                            role: 'user',
+                            parts: functionResponseParts
+                        });
+                    }
+                }
+
+                ]
+
+                History.push({
+                    role : "model",
+                    parts : [
+                        {
+                            functionCall : functionCall
+                        }
+                    ]
+                });
+
+                History.push({
+                    role : 'user',
+                    parts : [
+                        {
+                            functionResponse : functionResponsePart
+                        }
+                    ]
+                })
+
+                cnt += 1;
+            }
+        }
+        else
+        {
+            History.push({role : 'model', parts : [{text : result.text}]});
+
+            console.log(result.text);
+
+            break; 
+        }
+    }
+}
+
+*/
+
+// Cannot use above code as older models are not continued anymore
+
+
+async function runAgent()
+{
+    while(true)
+    {
+        const result = await ai.models.generateContent({
+            model: 'gemini-3.5-flash-lite',
+            contents : History,
+            config: {
+                tools,
+            },
+        });
+
+        if(result.functionCalls && result.functionCalls.length > 0)
+        {
+
+            History.push(result.candidates[0].content);
+
+            const functionResponseParts = [];
+
+            for(const functionCall of result.functionCalls)
+            {
+
+                const { name, args } = functionCall;
+
+                if(!toolFunctions[name])
+                {
+                    console.error(`Unknown Function Call : ${name}`);
+
+                    continue;
+                }
+                
+                const response = await toolFunctions[name](args);
+
+                const functionResponsePart = {
+                    
+                    name,
+
+                    response : {
+                        result : response
+                    },
+
+                    id : functionCall.id,
+
+                }
+
+                functionResponseParts.push({
+                    functionResponse: {
+                        name,
+                        response: {
+                            result: response
+                        },
+                        id: functionCall.id,
+                    }
+                });
+
+            }
+
+            if(functionResponseParts.length > 0)
+            {
+
+                History.push({
+                    role : 'user',
+                    parts : functionResponseParts
+                });
+            }
+        }
+        else
+        {
+            History.push({role : 'model', parts : [{text : result.text}]});
+
+            console.log(result.text);
+
+            break; 
+        }
+    }
+}
+
+
+while(true)
+{
+    const question = readlineSync.question('Ask me anything : ');
+
+    if(question == 'exit')
+    {
+        break;
+    }
+
+    History.push({
+        role : 'user',
+        parts : [{text : question}]
+    });
+
+    await runAgent();
+}
+

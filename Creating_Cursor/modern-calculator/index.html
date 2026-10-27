@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Calculator</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header / Controls -->
+        <header class="app-header">
+            <div class="logo">
+                <i class="fa-solid fa-calculator"></i>
+                <span>CalcMaster</span>
+            </div>
+            <div class="header-actions">
+                <button id="history-toggle" class="icon-btn" title="Toggle History">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                </button>
+                <button id="theme-toggle" class="icon-btn" title="Toggle Light/Dark Mode">
+                    <i class="fa-solid fa-sun"></i>
+                </button>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- Calculator Container -->
+            <div class="calculator">
+                <!-- Screen -->
+                <div class="display">
+                    <div id="previous-operand" class="previous-operand"></div>
+                    <div id="current-operand" class="current-operand">0</div>
+                </div>
+
+                <!-- Keypad -->
+                <div class="keypad">
+                    <button class="btn function" data-action="clear">AC</button>
+                    <button class="btn function" data-action="delete">
+                        <i class="fa-solid fa-delete-left"></i>
+                    </button>
+                    <button class="btn function" data-action="percent">%</button>
+                    <button class="btn operator" data-action="divide">÷</button>
+
+                    <button class="btn number" data-number="7">7</button>
+                    <button class="btn number" data-number="8">8</button>
+                    <button class="btn number" data-number="9">9</button>
+                    <button class="btn operator" data-action="multiply">×</button>
+
+                    <button class="btn number" data-number="4">4</button>
+                    <button class="btn number" data-number="5">5</button>
+                    <button class="btn number" data-number="6">6</button>
+                    <button class="btn operator" data-action="subtract">−</button>
+
+                    <button class="btn number" data-number="1">1</button>
+                    <button class="btn number" data-number="2">2</button>
+                    <button class="btn number" data-number="3">3</button>
+                    <button class="btn operator" data-action="add">+</button>
+
+                    <button class="btn function" data-action="sign">±</button>
+                    <button class="btn number" data-number="0">0</button>
+                    <button class="btn number" data-action="decimal">.</button>
+                    <button class="btn equals" data-action="calculate">=</button>
+                </div>
+            </div>
+
+            <!-- History Sidebar -->
+            <aside id="history-sidebar" class="history-sidebar">
+                <div class="history-header">
+                    <h3>History</h3>
+                    <button id="clear-history" class="text-btn">Clear All</button>
+                </div>
+                <div id="history-list" class="history-list">
+                    <div class="no-history">No history yet</div>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
